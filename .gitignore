@@ -1,1 +1,6 @@
-.DS_Store\n**/target/\n.idea/\n.vscode/\n*.log\n*.pid\n
+.DS_Store
+**/target/
+.idea/
+.vscode/
+*.log
+*.pid
