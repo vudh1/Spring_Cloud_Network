@@ -1,15 +1,17 @@
 server:
   port: 8800
+
 spring:
+  profiles:
+    active: native
   cloud:
     config:
       server:
-        git:
-         uri:  file:///D:/SpringProject/configuration-files
-          search-paths:
-           - '{application}'
-          skip-ssl-validation: true
-          clone-on-start: true
+        native:
+          search-locations: file:../config-repo
 
-
-
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
