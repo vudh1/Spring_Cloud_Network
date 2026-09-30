@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "8"
+          cache: maven
+
+      - name: Build config server
+        working-directory: springcloudServer
+        run: |
+          chmod +x mvnw
+          ./mvnw -B test
+
+      - name: Build config client
+        working-directory: springcloudClient
+        run: |
+          chmod +x mvnw
+          ./mvnw -B test
+
+      - name: Start config server
+        working-directory: springcloudServer
+        run: |
+          nohup ./mvnw -q spring-boot:run > ../server.log 2>&1 &
+          echo $! > ../server.pid
+
+      - name: Wait for config server
+        run: |
+          for i in {1..60}; do
+            if curl --fail --silent http://localhost:8800/application/default > /tmp/config.json; then
+              cat /tmp/config.json
+              exit 0
+            fi
+            sleep 2
+          done
+          cat server.log
+          exit 1
+
+      - name: Start config client
+        working-directory: springcloudClient
+        run: |
+          nohup ./mvnw -q spring-boot:run > ../client.log 2>&1 &
+          echo $! > ../client.pid
+
+      - name: Verify client receives server configuration
+        run: |
+          for i in {1..60}; do
+            value="$(curl --fail --silent http://localhost:8801/config/max-attempts || true)"
+            if [ "$value" = "5" ]; then
+              echo "Config client returned expected value: $value"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Server log:"
+          cat server.log
+          echo "Client log:"
+          cat client.log
+          exit 1
