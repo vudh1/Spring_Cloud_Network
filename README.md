@@ -23,6 +23,12 @@ config-repo/application.properties
 
 The project intentionally uses the original Spring Boot 2.1 / Spring Cloud Greenwich generation it was created with.
 
+## Demo
+
+![Spring Cloud animated demo](demo.gif)
+
+*Animated end-to-end flow: local config → Config Server → Config Client → REST response.*
+
 ## Run
 
 Use two terminals from the repository root.
